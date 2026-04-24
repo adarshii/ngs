@@ -1,0 +1,49 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, master, "copilot/**"]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package and dev dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Lint with flake8
+        run: |
+          flake8 src/ tests/ --max-line-length=100 --extend-ignore=E203
+
+      - name: Check formatting with black
+        run: |
+          black --check --line-length=100 src/ tests/
+
+      - name: Type check with mypy
+        run: |
+          mypy src/ngs --ignore-missing-imports
+
+      - name: Run tests with pytest
+        run: |
+          pytest tests/ -v --cov=src/ngs --cov-report=xml --cov-report=term-missing
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
