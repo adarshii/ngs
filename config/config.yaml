@@ -1,0 +1,318 @@
+# NGS WGS VARIANT-CALLING PIPELINE - CONFIGURATION FILE
+# Complete configuration for all pipeline steps
+# Author: Bioinformatics Team
+# Date: 2026-04-24
+
+# =============================================================================
+# GENERAL SETTINGS
+# =============================================================================
+
+project_name: "NGS-WGS-Pipeline"
+analysis_date: "2026-04-24"
+
+# Output directories
+output:
+  base: "results"
+  fastqc: "results/fastqc"
+  trimmed: "data/trimmed"
+  aligned: "results/aligned"
+  variants: "results/variants"
+  annotated: "results/annotated"
+  reports: "results/reports"
+  logs: "results/logs"
+
+# Sample information
+samples_file: "config/samples.tsv"
+
+# =============================================================================
+# REFERENCE GENOME
+# =============================================================================
+
+reference:
+  # Path to reference genome FASTA
+  genome: "data/reference/GRCh38.fa"
+  
+  # Pre-built indexes (created by prepare_reference.sh)
+  bwa_index: "data/reference/GRCh38.fa"
+  samtools_index: "data/reference/GRCh38.fa.fai"
+  gatk_dict: "data/reference/GRCh38.dict"
+  
+  # Reference download URL (GRCh38)
+  download_url: "ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/001/405/GCA_000001405.39_GRCh38.p13/GCA_000001405.39_GRCh38.p13_genomic.fna.gz"
+
+# =============================================================================
+# TOOL PARAMETERS
+# =============================================================================
+
+# FastQC - Quality Control
+# Purpose: Assess raw sequence quality
+# Output: HTML report showing quality metrics
+fastqc:
+  threads: 4
+  memory: "4G"
+  # FastQC analyzes:
+  # - Per-base quality scores (Phred)
+  # - Sequence composition
+  # - GC content
+  # - Adapter contamination
+  # - N content
+
+# Trimmomatic - Adapter and Quality Trimming
+# Purpose: Remove low-quality bases and adapters
+# Method: Sliding window quality trimming
+trimmomatic:
+  threads: 4
+  memory: "4G"
+  
+  # Adapter sequences (Illumina TruSeq)
+  adapters: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC"
+  
+  # Parameters:
+  # LEADING - Remove leading poor quality
+  # TRAILING - Remove trailing poor quality
+  # SLIDINGWINDOW - 4:20 = sliding window of 4bp with min quality 20
+  # MINLEN - Minimum read length after trimming
+  parameters: "LEADING:10 TRAILING:10 SLIDINGWINDOW:4:20 MINLEN:50"
+  
+  # Java memory for Trimmomatic
+  java_mem: "4G"
+
+# BWA-MEM - Sequence Alignment
+# Purpose: Map reads to reference genome
+# Method: Seed-and-extend using BWT
+bwa:
+  threads: 8
+  memory: "16G"
+  
+  # Alignment parameters
+  parameters: "-M"  # Mark shorter split hits as secondary
+  
+  # Read group information (added to BAM header)
+  # Important for downstream analysis
+  read_group:
+    platform: "ILLUMINA"
+    library: "TruSeq"
+    center: "NGSC"
+
+# SAMtools - BAM Processing
+# Purpose: Convert, sort, and index BAM files
+samtools:
+  threads: 4
+  memory: "4G"
+  
+  # Sorting method
+  sort_method: "coordinate"  # Options: coordinate, queryname
+  
+  # Compression level (0-9, higher = better compression)
+  compression: 9
+
+# Picard MarkDuplicates
+# Purpose: Mark PCR duplicate reads
+# Why: PCR artifacts inflate coverage and bias variant calling
+picard:
+  threads: 4
+  memory: "8G"
+  
+  # Mark duplicates options
+  remove_duplicates: false  # false = mark only, true = remove
+  
+  # Java memory allocation
+  java_mem: "8G"
+
+# GATK HaplotypeCaller - Variant Discovery
+# Purpose: Call SNPs and INDELs using de novo assembly
+# Method: Graph-based local assembly
+gatk:
+  threads: 4
+  memory: "8G"
+  
+  # Minimum mapping quality of reads
+  min_mapping_quality: 20
+  
+  # Minimum base quality
+  min_base_quality: 10
+  
+  # GVCF mode (keeps low-confidence sites for joint calling)
+  gvcf_mode: true
+  
+  # Reference confidence (bands for GVCF)
+  standard_min_confidence: 10
+  
+  # Java memory for GATK
+  java_mem: "8G"
+
+# BCFtools - Variant Filtering
+# Purpose: Apply quality filters to variant calls
+# Threshold rationale:
+# - QUAL >= 30: Phred score indicates 1/1000 error rate
+# - DP >= 10: Minimum coverage for reliable call
+# - MQ >= 20: Mapping quality of supporting reads
+bcftools:
+  threads: 2
+  memory: "4G"
+  
+  # Filtering parameters
+  min_quality: 30        # Minimum variant quality
+  min_depth: 10          # Minimum sequencing depth
+  max_depth: 500         # Maximum sequencing depth
+  min_mapping_quality: 20  # Minimum mapping quality
+  min_allele_frequency: 0.01  # Minimum alternative allele frequency
+  
+  # Filter expression (can be customized)
+  filter_expression: "QUAL>=30 & DP>=10 & DP<=500"
+
+# VEP - Variant Effect Prediction
+# Purpose: Functional annotation and consequence prediction
+# What it provides:
+# - Variant consequences (missense, frameshift, etc.)
+# - Impact predictions (HIGH, MODERATE, LOW)
+# - SIFT and PolyPhen-2 scores
+# - gnomAD population frequencies
+vep:
+  threads: 4
+  memory: "8G"
+  
+  # VEP cache (built-in or custom)
+  cache_dir: ""  # Empty = use built-in cache
+  
+  # VEP plugins
+  plugins:
+    - "Consequence"
+    - "SIFT"
+    - "PolyPhen"
+    - "gnomADe"
+  
+  # Assembly
+  assembly: "GRCh38"
+  
+  # Output format
+  output_format: "vcf"
+
+# =============================================================================
+# ANALYSIS PARAMETERS
+# =============================================================================
+
+# Joint Genotyping (for multi-sample studies)
+joint_genotyping:
+  enabled: false  # Set to true for multi-sample analysis
+  # Once all samples generate GVCF:
+  # - Combine GVCFs
+  # - Run GATK GenotypeGVCFs
+  # - Generate joint VCF
+
+# =============================================================================
+# RESOURCE ALLOCATION
+# =============================================================================
+
+# Default resource limits
+resources:
+  default:
+    threads: 1
+    memory: "4G"
+    time: "01:00:00"
+  
+  high:
+    threads: 8
+    memory: "16G"
+    time: "04:00:00"
+
+# =============================================================================
+# CLUSTER SETTINGS (optional - for HPC)
+# =============================================================================
+
+# Uncomment and modify for cluster submission
+
+# cluster:
+#   type: "slurm"  # or "sge"
+#   queue: "normal"
+#   account: "project_code"
+#   time: "24:00:00"
+#   memory_per_task: "4G"
+
+# =============================================================================
+# QUALITY CONTROL THRESHOLDS
+# =============================================================================
+
+# FastQC quality thresholds
+qc:
+  # Phred score interpretation:
+  # >= 30 = high quality (1 error per 1000 bases)
+  # >= 20 = medium quality (1 error per 100 bases)
+  # < 20 = low quality
+  min_quality: 20
+  min_length: 50
+  
+  # GC content deviation (%)
+  gc_tolerance: 5
+  
+  # N content (%)
+  max_n_content: 5
+
+# Variant quality thresholds
+variant_qc:
+  # Ts/Tv ratio expected for human genomes: 2.0-2.2
+  ts_tv_min: 1.8
+  ts_tv_max: 2.5
+  
+  # Variant quality
+  qual_min: 30
+  
+  # Sequencing depth (coverage)
+  depth_min: 10
+  depth_max: 500
+
+# =============================================================================
+# REPORTING
+# =============================================================================
+
+# Report generation
+report:
+  enabled: true
+  title: "NGS WGS Variant-Calling Pipeline Report"
+  include_plots: true
+  include_tables: true
+
+# =============================================================================
+# ADVANCED OPTIONS
+# =============================================================================
+
+# Dry run (validate workflow without execution)
+dry_run: false
+
+# Keep intermediate files (temporary files)
+keep_intermediate: false
+
+# Restart from specific rule
+restart_rule: null  # Set to rule name to restart from that point
+
+# Verbose logging
+verbose: true
+
+# =============================================================================
+# NOTES
+# =============================================================================
+
+# This configuration follows GATK Best Practices for germline variant calling
+# Reference: https://gatk.broadinstitute.org/hc/en-us/articles/360035535932
+#
+# Pipeline workflow:
+# 1. FastQC - Quality assessment
+# 2. Trimmomatic - Adapter/quality trimming
+# 3. BWA-MEM - Alignment to reference
+# 4. SAMtools - BAM processing (sort, index)
+# 5. Picard - Mark duplicates
+# 6. GATK HaplotypeCaller - Variant discovery
+# 7. BCFtools - Variant filtering
+# 8. VEP - Functional annotation
+# 9. Report generation - Summary statistics
+#
+# Expected runtime:
+# - Single sample (30x coverage): 2-4 hours
+# - Depends on: CPU cores, disk speed, file size
+#
+# Output files:
+# - *.fastqc.html - Quality reports
+# - *.sorted.bam - Aligned reads
+# - *.vcf.gz - Variant calls
+# - *.annotated.vcf.gz - Annotated variants
+# - pipeline_report.html - Summary report
