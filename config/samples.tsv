@@ -1,0 +1,14 @@
+# NGS WGS Variant-Calling Pipeline - Sample Configuration
+# Tab-separated values (TSV)
+# Columns: sample_id, read1_path, read2_path, platform, sample_name
+#
+# Fill in your sample information below
+# One sample per line
+# Use absolute or relative paths to FASTQ files (gzip supported)
+#
+# Example:
+# sample1	data/raw_data/sample1_R1.fastq.gz	data/raw_data/sample1_R2.fastq.gz	ILLUMINA	S001
+# sample2	data/raw_data/sample2_R1.fastq.gz	data/raw_data/sample2_R2.fastq.gz	ILLUMINA	S002
+
+# Add your samples below:
+
