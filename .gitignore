@@ -1,0 +1,166 @@
+# NGS WGS Variant-Calling Pipeline - Git Ignore File
+# Excludes large data files and temporary outputs from version control
+
+# ============================================================================
+# DATA FILES (Do not commit - too large)
+# ============================================================================
+
+# Raw sequencing data
+data/raw_data/*.fastq
+data/raw_data/*.fastq.gz
+data/raw_data/*.fq
+data/raw_data/*.fq.gz
+
+# Reference genome
+data/reference/*.fa
+data/reference/*.fa.gz
+data/reference/*.fasta
+data/reference/*.fasta.gz
+data/reference/*.fai
+data/reference/*.dict
+data/reference/*.bwt
+data/reference/*.pac
+data/reference/*.ann
+data/reference/*.amb
+data/reference/*.sa
+
+# Intermediate files
+data/trimmed/*.fastq
+data/trimmed/*.fastq.gz
+data/trimmed/*.fq
+data/trimmed/*.fq.gz
+
+# ============================================================================
+# RESULTS FILES (Large outputs)
+# ============================================================================
+
+# FastQC reports
+results/fastqc/*.html
+results/fastqc/*.zip
+
+# Alignment files (BAM can be very large)
+results/aligned/*.bam
+results/aligned/*.bam.bai
+results/aligned/*.sam
+results/aligned/*.sam.bz2
+results/aligned/*.dup_metrics.txt
+results/aligned/recalibration_data.table
+
+# Variant files (VCF can be large)
+results/variants/*.vcf
+results/variants/*.vcf.gz
+results/variants/*.vcf.gz.tbi
+results/variants/*.gvcf
+results/variants/*.gvcf.gz
+results/variants/*.gvcf.gz.tbi
+results/variants/*.raw.vcf*
+results/variants/*.filtered.vcf*
+results/variants/*.tmp.*
+
+# Annotated variants
+results/annotated/*.vcf
+results/annotated/*.vcf.gz
+results/annotated/*.vcf.gz.tbi
+
+# Reports
+results/reports/*.html
+results/reports/*.json
+results/reports/*.txt
+
+# Logs
+results/logs/*.log
+
+# ============================================================================
+# SNAKEMAKE WORKING DIRECTORY
+# ============================================================================
+
+.snakemake/
+.snakemake_shell/
+.snakemake_job_properties
+
+# ============================================================================
+# CONDA ENVIRONMENT (Keep environment.yaml instead)
+# ============================================================================
+
+.conda/
+conda/
+
+# ============================================================================
+# PYTHON FILES
+# ============================================================================
+
+# Compiled Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Packages
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# ============================================================================
+# IDE AND EDITOR FILES
+# ============================================================================
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.project
+.pydevproject
+.settings/
+
+# ============================================================================
+# TEMPORARY AND BACKUP FILES
+# ============================================================================
+
+*.tmp
+*.temp
+*.bak
+*.backup
+*~
+.~*
+
+# ============================================================================
+# SYSTEM FILES
+# ============================================================================
+
+.DS_Store
+Thumbs.db
+*.exe
+.AppleDouble
+.LSOverride
+
+# ============================================================================
+# CONFIGURATION (Optional - keep versions of your config)
+# ============================================================================
+
+# config/*.backup.yaml  # Uncomment to allow backup configs
+
+# ============================================================================
+# OPTIONAL - Uncomment if not tracking these
+# ============================================================================
+
+# .env files
+# .env
+# .env.local
+
+# SSH keys
+# *.pem
+# *.key
