@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  # ── Main pipeline service ────────────────────────────────────────────────────
+  pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ngs-pipeline:latest
+    container_name: ngs-pipeline
+    volumes:
+      # Mount local data and results so they persist after the container exits
+      - ./data:/workspace/data
+      - ./results:/workspace/results
+      - ./config:/workspace/config
+      - ./logs:/workspace/logs
+    environment:
+      - REFERENCE_GENOME=/workspace/data/reference/GRCh38.fa
+    # Run Snakemake with 8 cores by default; override with:
+    #   docker-compose run pipeline snakemake --cores 4
+    command: ["snakemake", "--cores", "8"]
+
+  # ── Tests service (run pytest without a full pipeline execution) ────────────
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ngs-pipeline:latest
+    container_name: ngs-tests
+    volumes:
+      - ./src:/workspace/src
+      - ./tests:/workspace/tests
+    command: ["pytest", "tests/", "-v", "--cov=src/ngs", "--cov-report=term-missing"]

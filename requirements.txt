@@ -1,0 +1,29 @@
+# NGS WGS Variant-Calling Pipeline - Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# ─── Core Python Data Science ────────────────────────────────────────────────
+numpy>=1.24.0
+pandas>=2.0.0
+
+# ─── Bioinformatics ───────────────────────────────────────────────────────────
+# Note: bcftools, samtools, BWA, FastQC, Trimmomatic, GATK are system tools
+# installed via conda/bioconda (see environment.yaml or setup.sh).
+# The packages below are Python wrappers / helpers.
+pysam>=0.22.0          # SAM/BAM/VCF/BCF file handling
+biopython>=1.83        # General bioinformatics utilities
+
+# ─── Report Generation ────────────────────────────────────────────────────────
+jinja2>=3.1.0          # HTML templating for reports
+matplotlib>=3.7.0      # Plotting
+seaborn>=0.13.0        # Statistical visualisations
+
+# ─── Workflow ─────────────────────────────────────────────────────────────────
+snakemake>=8.10.0      # Workflow management system
+pyyaml>=6.0.0          # YAML config parsing
+
+# ─── Development / Testing ────────────────────────────────────────────────────
+pytest>=7.4.0
+pytest-cov>=4.1.0
+flake8>=6.1.0
+black>=23.7.0
+mypy>=1.5.0

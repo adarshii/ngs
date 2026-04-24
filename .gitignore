@@ -102,6 +102,12 @@ dist/
 build/
 *.egg
 
+# Testing / coverage
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+
 # Virtual environments
 venv/
 ENV/
