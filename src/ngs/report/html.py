@@ -21,11 +21,15 @@ from typing import Dict, Optional
 
 
 def load_stats(stats_file: str) -> Dict:
-    """Load statistics from a JSON file."""
-    if stats_file.endswith(".json"):
-        with open(stats_file, "r") as fh:
-            return json.load(fh)
-    return {}
+    """Load statistics from a JSON file.
+
+    Returns an empty dict if the file does not exist or has a non-.json extension.
+    """
+    path = Path(stats_file)
+    if not path.exists() or not stats_file.endswith(".json"):
+        return {}
+    with open(stats_file, "r") as fh:
+        return json.load(fh)
 
 
 class HTMLReportGenerator:

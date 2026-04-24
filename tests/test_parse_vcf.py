@@ -86,10 +86,9 @@ def test_depth_stats_populated(minimal_vcf):
 
 
 def test_ts_tv_ratio(minimal_vcf):
-    """Both SNPs are transitions (A>G, C>T), so Ts/Tv should be inf-guard (0)
-    when there are no transversions, or 2 if transversions present."""
+    """Both SNPs are transitions (A>G, C>T) and there are no transversions,
+    so the guard value of 0.0 is expected (avoids division by zero)."""
     stats = VCFParser(minimal_vcf).parse_vcf()
-    # A→G and C→T are both transitions; 0 transversions → ratio = 0 (guard)
     assert stats["ts_tv_ratio"] == 0.0
 
 
